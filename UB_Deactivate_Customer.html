@@ -1,0 +1,92 @@
+<html>
+
+<head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="UB.css"></link>
+
+    <script>
+
+        function onPageLoad() {
+
+            if ( !sessionStorage.getItem( "Mgr_Id" ) || ( document.referrer != "http://localhost:3000/UB_Manager_Home.html" && document.referrer != "http://localhost:3000/UB_Add_Customer.html" && document.referrer != "http://localhost:3000/UB_View_Customers.html" && document.referrer != "http://localhost:3000/UB_Modify_Customer.html" ) ) {
+                alert( "Invalid access...redirecting to welcome page..." );
+                window.location = "UB.html";
+            }
+            
+        }
+        
+        var cust_id;
+
+        function Initialize_Global_Vars() {
+        
+            cust_id    = document.getElementById( "cust_id" ).value;
+            console.log(cust_id);
+        }
+
+        function Deactivate_Customer_Submit() {
+            
+            Initialize_Global_Vars();
+
+            data = { 
+                "type": "mgr",
+                "id":    cust_id,
+            };
+
+            xhr = new XMLHttpRequest()
+            xhr.open( "POST", "http://localhost:1500/deactivate_customer", true );
+            xhr.setRequestHeader( "Content-Type", "application/json; encoding=utf-8" );
+            xhr.onreadystatechange = function() {
+                if ( xhr.readyState == 4 && xhr.status == 200 ) {
+                    response = xhr.response;
+                    if (response.startsWith("\"Successfully")){
+                        document.getElementById("success").innerHTML = response.slice(1,-1);
+                        document.getElementById("error").innerHTML = '';
+                    }
+                    else {
+                        document.getElementById("error").innerHTML = response.slice(1,-1);
+                        document.getElementById("success").innerHTML = '';
+                    }
+                }
+            }
+            xhr.send( JSON.stringify( data ) );
+
+        }
+
+    </script>
+</head>
+
+<body onload="onPageLoad()">
+
+    <div class="topnav">
+
+        <a href="UB.html"><img src="utkarsh_logo.png"></img></a>
+
+        <a href="UB_Add_Customer.html">Add a Customer</a>
+        <a href="UB_View_Customers.html">View Customers</a>
+        <a href="UB_Modify_Customer.html">Modify Customer</a>
+        <a class="active" href="UB_Manager_Home.html">Deactivate Customer</a>
+
+    </div>
+
+    <br /><br />
+    <table>
+
+        <tr>
+            <td class="Form_lbl">Customer ID:</td>
+            <td class="Form_inp"><input type="text" id="cust_id"></input></td>
+        </tr>
+
+        
+
+    </table>
+
+    <br />
+    <input type="submit" class="add_button" onClick="Deactivate_Customer_Submit()" value="Deactivate customer"></input>
+
+    <b><p id="success" class="success"></p></b>
+    <b><p id="error" class="error"></p></b>
+
+</body>
+
+</html>

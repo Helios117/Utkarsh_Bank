@@ -1,0 +1,153 @@
+<html>
+
+    <head>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="UB.css"></link>
+
+        <script>
+
+            function onPageLoad() {
+
+                if ( !sessionStorage.getItem( "Mgr_Id" ) || ( document.referrer != "http://localhost:3000/UB_Manager_Home.html" && document.referrer != "http://localhost:3000/UB_Modify_Customer.html" && document.referrer != "http://localhost:3000/UB_View_Customers.html" && 
+                document.referrer != "http://localhost:3000/UB_Add_Customer.html" &&
+                document.referrer != "http://localhost:3000/UB_Deactivate_Customer.html" ) ) {
+                    alert( "Invalid access...redirecting to welcome page..." );
+                    window.location = "UB.html";
+                }
+                
+            }
+
+            var fname, mname, lname, dob, email, mobile, address;
+
+            function Initialize_Global_Vars() {
+            
+                fname    = document.getElementById( "fname" ).value;
+                mname    = document.getElementById( "mname" ).value;
+                lname    = document.getElementById( "lname" ).value;
+                dob      = document.getElementById( "dob" ).value;
+                email    = document.getElementById( "email" ).value;
+                mobile   = document.getElementById( "mobile" ).value;
+                address  = document.getElementById( "address" ).value;
+                password = document.getElementById( "password" ).value;
+
+            }
+
+            function Add_Customer_Submit() {
+
+                /* The below code is just for initial testing purpose to test the API, so commented out.
+                xhr = new XMLHttpRequest();
+                xhr.open( "GET", "http://localhost:1500", true );
+                xhr.onreadystatechange = function() {
+                    alert( xhr.readyState );
+                    alert( xhr.status );
+                    if ( xhr.readyState == 4 && xhr.status == 200 ) {
+                        alert( ">>> RESPONSE received is: \n" + xhr.response );
+                    }
+                }
+                xhr.send();
+                */
+                
+                Initialize_Global_Vars();
+
+                data = { 
+                    "fname":    fname, 
+                    "mname":    mname,
+                    "lname":    lname,
+                    "dob":      dob,
+                    "email":    email,
+                    "mobile":   mobile,
+                    "address":  address,
+                    "password": password,
+                    "balance": 1000
+                };
+
+                xhr = new XMLHttpRequest()
+                xhr.open( "POST", "http://localhost:1500/add_customer", true );
+                xhr.setRequestHeader( "Content-Type", "application/json; encoding=utf-8" );
+                xhr.onreadystatechange = function() {
+                    if ( xhr.readyState == 4 && xhr.status == 200 ) {
+                        response = xhr.response;
+                        if (response.startsWith("\"Customer ID")){
+                            document.getElementById("success").innerHTML = response.slice(1,-1);
+                            document.getElementById("error").innerHTML = '';
+                        }
+                        else {
+                            document.getElementById("error").innerHTML = response.slice(1,-1);
+                            document.getElementById("success").innerHTML = '';
+                        }
+                    }
+                }
+                xhr.send( JSON.stringify( data ) );
+
+            }
+
+        </script>
+    </head>
+
+    <body onload="onPageLoad()">
+
+        <div class="topnav">
+
+            <a href="UB.html"><img src="utkarsh_logo.png"></img></a>
+
+            <a class="active" href="UB_Manager_Home.html">Add a Customer</a>
+            <a href="UB_View_Customers.html">View Customers</a>
+            <a href="UB_Modify_Customer.html">Modify Customer</a>
+            <a href="UB_Deactivate_Customer.html">Deactivate Customer</a>
+
+        </div>
+
+        <table>
+
+            <tr>
+                <td class="Form_lbl">First Name:</td>
+                <td class="Form_inp"><input type="text" id="fname"></input></td>
+            </tr>
+
+            <tr>
+                <td>Middle Name:</td>
+                <td><input type="text" id="mname"></input></td>
+            </tr>
+
+            <tr>
+                <td>Last Name:</td>
+                <td><input type="text" id="lname"></input></td>
+            </tr>
+
+            <tr>
+                <td>Date of Birth:</td>
+                <td><input type="date" id="dob"></input></td>
+            </tr>
+
+            <tr>
+                <td>Email:</td>
+                <td><input type="text" id="email"></input></td>
+            </tr>
+
+            <tr>
+                <td>Mobile:</td>
+                <td><input type="text" id="mobile"></input></td>
+            </tr>
+
+            <tr>
+                <td>Address:</td>
+                <td><input type="text" id="address"></input></td>
+            </tr>
+
+            <tr>
+                <td>Password:</td>
+                <td><input type="text" id="password"></input></td>
+            </tr>
+
+        </table>
+
+        <br />
+        <input type="submit" class="add_button" onClick="Add_Customer_Submit()" value="Add a Customer"></input>
+
+        <b><p id="success" class="success"></p></b>
+        <b><p id="error" class="error"></p></b>
+
+    </body>
+
+</html>

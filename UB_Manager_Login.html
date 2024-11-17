@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="UB.css"></link>
+        <title>Utkarsh Bank</title>
+
+        <script>
+
+            function MgrLoginSubmit() {
+
+                document.getElementById( "login_status" ).innerText = "Smile! You are on camera...";
+                
+                data = { 
+					"mgr_id":  document.getElementById( "mgr_id" ).value
+				};
+
+				xhr = new XMLHttpRequest();
+				xhr.open( "POST", "http://localhost:1500/manager_login", true );
+				xhr.setRequestHeader( "Content-Type", "application/json; encoding=utf-8" );
+
+				xhr.onreadystatechange = function() {
+					if ( xhr.readyState == 4 && xhr.status == 200 ) {
+                        resp = xhr.responseText;
+                        if ( resp.includes( "Successful" ) ) {
+
+                            document.getElementById( "login_status" ).style.color = "green";
+                            document.getElementById( "login_status" ).innerText = "Login successful!";
+                            sessionStorage.setItem( "Mgr_Id", document.getElementById( "mgr_id" ).value );
+                            mgrName = resp.split( " " )[0];
+                            mgrName = mgrName.substring(1);
+                            sessionStorage.setItem( "Mgr_Name", mgrName );
+                            window.location = "UB_Manager_Home.html";
+
+                        }
+					}
+                    else {
+                        document.getElementById( "login_status" ).innerText = "Could not login with entered credentials!";
+                        document.getElementById( "login_status" ).style.color = "crimson";
+                    }
+				}
+
+				xhr.send( JSON.stringify( data ) );
+
+			}
+
+        </script>
+
+    </head>
+
+    <body>
+
+        <div class="topnav">
+            <a href="UB.html"><img src="utkarsh_logo.png"></img></a>
+        </div>
+
+        <br />
+
+        <table class="loginTable">
+
+            <tr>
+                <td>Manager ID:</td>
+                <td><input type="text" id="mgr_id"></input></td>
+            </tr>
+
+            <!-- Face login has been implemented for Manager, so password field is commented out
+            <tr>
+                <td>Password:</td>
+                <td><input type="password" id="mgr_pwd"></input></td>
+            </tr>
+            -->
+
+        </table>
+        
+        <br />
+        <button class="login" onclick="MgrLoginSubmit()">Login</button>
+        <br />
+        <p class="loginStatus" id="login_status"></p>
+
+    </body>
+
+</html>

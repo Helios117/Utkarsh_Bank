@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="UB.css"></link>
+
+        <script>
+
+            function onPageLoad() {
+
+                if ( !sessionStorage.getItem( "Ctr_Id" ) || (document.referrer != "http://localhost:3000/UB_Customer_Login.html" &&
+                document.referrer != "http://localhost:3000/UB_Customer_Home.html" &&
+                document.referrer != "http://localhost:3000/UB_View_Transactions.html" &&
+                document.referrer != "http://localhost:3000/UB_Deposit_Withdraw.html") ) {
+                    
+                    alert( "Invalid access...redirecting you to welcome page..." );
+                    window.location = "UB.html";
+
+                }
+                else {
+
+                    msg = "Welcome " + sessionStorage.getItem( "Ctr_Name" ) + "! ";
+                    msg += "Please use a menu option from the above navigation bar.";
+                    document.getElementById( "prompt" ).innerText = msg;
+
+                }
+                
+            }
+
+        </script>
+
+    </head>
+
+    <body onload="onPageLoad()">
+
+        <div class="topnav">
+
+            <a href="UB.html"><img src="utkarsh_logo.png"></img></a>
+
+            <a href="UB_Deposit_Withdraw.html">Deposit and Withdraw</a>
+            <a href="UB_View_Transactions.html">View Transactions</a>
+
+        </div>
+
+        <p class="prompt" id="prompt"></p>
+
+    </body>
+
+</html>

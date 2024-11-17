@@ -1,0 +1,289 @@
+<html>
+
+<head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="UB.css"></link>
+</head>
+
+<body onload="onPageLoad()">
+
+    <div class="topnav">
+
+        <a href="UB.html"><img src="utkarsh_logo.png"></img></a>
+
+        <a href="UB_Add_Customer.html">Add a Customer</a>
+        <a href="UB_View_Customers.html">View Customers</a>
+        <a class="active" href="UB_Manager_Home.html">Modify Customer</a>
+        <a href="UB_Deactivate_Customer.html">Deactivate Customer</a>
+
+    </div>
+    <table>
+
+        <tr>
+            <td class="Form_lbl">Customer ID:</td>
+            <td class="Form_inp"><input type="text" id="cust_id"></input></td>
+        </tr> 
+    </table>
+    <br /><br />
+    
+
+    <br />
+    <input type="button" onClick="View_Customer_Submit();" value="Submit ID"></input>
+    <br />
+    <input type="button" onClick="display_table();" value="Close Table"></input>
+    <b><p id="error" class="error"></p></b>
+    <table id="displaytable">
+        <tr>
+            <th>First name</th>
+            <td class="info" id="First Name"></td>
+            <td><input type="button" onClick="update_fname();this.onclick=null;" value="Edit"></input></td>
+        </tr>
+        <tr>
+            <th>Middle Name</th>
+            <td class="info" id="Middle Name"></td>
+            <td><input type="button" onClick="update_mname();this.onclick=null;" value="Edit"></input></td>
+        </tr>
+        <tr>
+            <th>Last Name</th>
+            <td class="info" id="Last Name"></td>
+            <td><input type="button" onClick="update_lname();this.onclick=null;" value="Edit"></input></td>
+        </tr>
+        <tr>
+            <th>Date of Birth</th>
+            <td class="info" id="Date of Birth"></td>
+            <td><input type="button" onClick="update_dob();this.onclick=null;" value="Edit"></input></td>
+        </tr>
+        <tr>
+            <th>Email</th>
+            <td class="info" id="Email"></td>
+            <td><input type="button" onClick="update_email();this.onclick=null;" value="Edit"></input></td>
+        </tr>
+        <tr>
+            <th>Mobile</th>
+            <td class="info" id="Mobile"></td>
+            <td><input type="button" onClick="update_mobile();this.onclick=null;" value="Edit"></input></td>
+        </tr>
+        <tr>
+            <th>Address</th>
+            <td class="info" id="Address"></td>
+            <td><input type="button" onClick="update_address();this.onclick=null;" value="Edit"></input></td>
+        </tr>
+        <tr>
+            <th>Balance</th>      
+            <td class="info" id="Balance"></td>      
+        </tr>
+        <tr>
+            <th>Account info</th>      
+            <td class="info" id="Account info"></td>      
+            <td><input type="button" onClick="update_account();this.onclick=null;" value="Edit"></input></td>
+        </tr>
+    
+    </table>
+    <br />
+    <div id="upd"><input type="button" value="Update"></input></div>
+    <br/>
+    <b><p id="success" class="success"></p></b>
+    <b><p id="error" class="error"></p></b>
+    <script>
+        var cust_id, innerElement, updated_data;
+        const updated_ids = [['First Name','updated_fname'], ['Middle Name','updated_mname'],['Last Name','updated_lname'],['Date of Birth','updated_dob'],['Email','updated_email'],['Mobile','updated_mobile'],['Address','updated_address'],['Account info','updated_account']]
+
+        function onPageLoad() {
+            
+            if ( !sessionStorage.getItem( "Mgr_Id" ) || ( document.referrer != "http://localhost:3000/UB_Manager_Home.html" && document.referrer != "http://localhost:3000/UB_Add_Customer.html" && document.referrer != "http://localhost:3000/UB_View_Customers.html" && document.referrer != "http://localhost:3000/UB_Deactivate_Customer.html" ) ) {
+                alert( "Invalid access...redirecting to welcome page..." );
+                window.location = "UB.html";
+            }
+            
+            document.getElementById("displaytable").style.display="none";
+            
+        }
+
+        function Initialize_Global_Vars() {
+            cust_id    = document.getElementById( "cust_id" ).value;
+        }
+        function init_updated_elements()
+        {
+            Initialize_Global_Vars();
+            updated_data = {'type':'mgr','func':'modify','id':cust_id}
+            for (let i=0;i<updated_ids.length;i++)
+            {
+                innerElement = document.getElementById(updated_ids[i][1]);
+                if (innerElement === null){
+                    updated_data[updated_ids[i][1]] = document.getElementById(updated_ids[i][0]).innerText;
+                }
+                else{
+                    updated_data[updated_ids[i][1]] = innerElement.value;
+                }
+            }
+        }
+        function init_xml()
+        {
+            return new XMLHttpRequest();
+        }
+        function View_Customer_Submit() {
+            Initialize_Global_Vars();
+            data = { 
+                "type": "mgr",
+                'func':'view',
+                "id":    cust_id,
+            };
+
+            //url = 'http://localhost:1500/view_customer?type='+data["type"]+'&func='+data["func"]+'&id='+data["id"];
+            xhr = new XMLHttpRequest();
+            xhr.open( "POST", "http://localhost:1500/view_customer", true );
+            xhr.setRequestHeader( "Content-Type", "application/json; encoding=utf-8" );
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200 ) {
+                    response = JSON.parse(xhr.response);
+                    display_table();
+                    if (response['data'] == null)
+                    {
+                        document.getElementById("error").innerHTML = response['response_code'];
+                        const form_info = document.getElementsByClassName("info");
+                        for (let i = 0; i < form_info.length; i++) 
+                        {
+                            form_info[i].innerHTML = '';
+                        }
+                    }
+                    else
+                    {
+                        
+                        document.getElementById("First Name").innerHTML = response['data']['fname'] ;
+                        document.getElementById("Middle Name").innerHTML = response['data']['mname'] ;
+                        document.getElementById("Last Name").innerHTML = response['data']['lname'] ;
+                        document.getElementById("Date of Birth").innerHTML = response['data']['dob'] ;
+                        document.getElementById("Email").innerHTML = response['data']['email'] ;
+                        document.getElementById("Address").innerHTML = response['data']['address'] ;
+                        document.getElementById("Mobile").innerHTML = response['data']['mobile'] ;
+                        document.getElementById("Balance").innerHTML = response['data']['balance'] ;
+                        
+                        if (response['data']['deleted'] != 'N')
+                        {
+                            document.getElementById("Account info").innerHTML = 'Deactivated';
+                        }
+                        else
+                        {
+                            document.getElementById("Account info").innerHTML = 'Active';
+                        }
+                        document.getElementById("error").innerHTML = '';
+                    }
+                }
+            }
+            //xhr.send();
+            xhr.send( JSON.stringify( data ) );
+            //console.log(xhr);
+        }
+        function display_table()
+        {
+            if (document.getElementById("displaytable").style.display === "none")
+                document.getElementById("displaytable").style.display="block";
+            else
+                document.getElementById("displaytable").style.display="none";
+        }
+        function update_fname()
+        {
+            var field = document.getElementById('First Name')
+            var input_element = document.createElement("INPUT");
+            input_element.setAttribute("type", "text");
+            input_element.setAttribute("id","updated_fname")
+            field.appendChild(input_element);
+            input_element.value = field.innerText;
+        }
+        function update_mname()
+        {
+            var field = document.getElementById('Middle Name')
+            var input_element = document.createElement("INPUT");
+            input_element.setAttribute("type", "text");
+            input_element.setAttribute("id","updated_mname")
+            field.appendChild(input_element);
+            input_element.value = field.innerText;
+        }
+        function update_lname()
+        {
+            var field = document.getElementById('Last Name')
+            var input_element = document.createElement("INPUT");
+            input_element.setAttribute("type", "text");
+            input_element.setAttribute("id","updated_lname")
+            field.appendChild(input_element);
+            input_element.value = field.innerText;
+        }
+        function update_dob()
+        {
+            var field = document.getElementById('Date of Birth')
+            var input_element = document.createElement("INPUT");
+            input_element.setAttribute("type", "text");
+            input_element.setAttribute("id","updated_dob")
+            field.appendChild(input_element);
+            input_element.value = field.innerText;
+        }
+        function update_email()
+        {
+            var field = document.getElementById('Email')
+            var input_element = document.createElement("INPUT");
+            input_element.setAttribute("type", "text");
+            input_element.setAttribute("id","updated_email")
+            field.appendChild(input_element);
+            input_element.value = field.innerText;
+        }
+        function update_mobile()
+        {
+            var field = document.getElementById('Mobile')
+            var input_element = document.createElement("INPUT");
+            input_element.setAttribute("type", "text");
+            input_element.setAttribute("id","updated_mobile");
+            field.appendChild(input_element);
+            input_element.value = field.innerText;
+        }
+        function update_address()
+        {
+            var field = document.getElementById('Address')
+            var input_element = document.createElement("INPUT");
+            input_element.setAttribute("type", "text");
+            input_element.setAttribute("id","updated_address")
+            field.appendChild(input_element);
+            input_element.value = field.innerText;
+        }
+        function update_account()
+        {
+            var field = document.getElementById('Account info')
+            var input_element = document.createElement("INPUT");
+            input_element.setAttribute("type", "text");
+            input_element.setAttribute("id","updated_account")
+            field.appendChild(input_element);
+            input_element.value = field.innerText;
+        }
+        function submit_updated_values()
+        {
+            Initialize_Global_Vars();
+            init_updated_elements();
+            xhr = new XMLHttpRequest();
+            xhr.open("POST","http://localhost:1500/modify_customer", true);
+            xhr.onreadystatechange = function(){
+                if(xhr.readyState == 4 && xhr.status == 200){
+                    response = JSON.parse(xhr.response);
+                    //console.log(response);
+                    if (response.startsWith("Successful")){
+                        document.getElementById("success").innerHTML = response;
+                        document.getElementById("error").innerHTML = '';
+                    }
+                    else {
+                        document.getElementById("error").innerHTML = response;
+                        document.getElementById("success").innerHTML = '';
+                    }
+                }
+            }
+            xhr.send(JSON.stringify(updated_data));
+        }
+    
+    var update = document.getElementById('upd');
+    update.addEventListener("click",myFunc,true);
+    function myFunc()
+    {
+        submit_updated_values();
+    }
+</script>
+</body>
+
+</html>

@@ -1,0 +1,100 @@
+<html>
+
+<head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="UB.css"></link>
+
+    <script>
+
+        function onPageLoad() {
+            
+            if ( !sessionStorage.getItem( "Ctr_Id" ) || ( document.referrer != "http://localhost:3000/UB_Customer_Home.html" &&
+            document.referrer != "http://localhost:3000/UB_Deposit_Withdraw.html" &&
+            document.referrer != "http://localhost:3000/UB_View_Transactions.html") ) {
+                alert( "Invalid access...redirecting to welcome page..." );
+                window.location = "UB.html";
+            }
+            view_transactions();
+            
+        }
+        
+        function view_transactions() {
+
+            data = {
+                ctr_id: sessionStorage.getItem( "Ctr_Id" )
+            }
+
+            xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost:1500/view_trans", true );
+
+            xhr.onreadystatechange =
+            function() {
+
+                if ( xhr.readyState == 4 && xhr.status == 200 ) {
+                    var res = xhr.response;
+                    res = res.replaceAll( "[", "" );
+                    res = res.replaceAll( "]", "" );
+                    res = res.replaceAll( "(", "" );
+                    res = res.replaceAll( ")", "" );
+                    res = res.replaceAll( "'", "" );
+                    res = res.replaceAll( "\"", "" );
+                    res = res.split( "," );
+
+                    var header = [ "Account ID", "Customer ID", "Balance", "Transaction ID", 
+                                   "Transaction Date", "Transaction Type", "Transaction Ammount" ];
+
+                    var table = document.createElement( "table" );
+                    table.className = "view_table";
+
+                    for ( var i = 0; i < header.length; i++ ) {
+
+                        var th = document.createElement( "th" );
+                        th.className = "view_table_elements";
+                        th.textContent = header[i];
+                        table.appendChild( th );
+
+                    }
+
+                    for ( var i = 0; i < res.length / header.length; i++ ) {
+
+                        var tr = document.createElement( "tr" );
+
+                        for ( var j = 0; j < header.length; j++ ) {
+
+                            var td = document.createElement( "td" );
+                            td.className = "view_table_elements";
+                            td.textContent = res[ ( i * header.length ) + j ];
+                            tr.appendChild( td );
+
+                        }
+
+                        table.appendChild( tr );
+
+                    }
+
+                    document.body.appendChild( table );
+
+                }
+
+            }
+            xhr.send(JSON.stringify(data));
+
+        }
+
+    </script>
+</head>
+
+<body onload="onPageLoad();">
+
+    <div class="topnav">
+        <a href="UB.html"><img src="utkarsh_logo.png"></img></a>
+
+        <a href="UB_Deposit_Withdraw.html">Deposit and Withdraw</a>
+        <a href="UB_Customer_Home.html" class="active">View Transactions</a>
+
+    </div>
+
+</body>
+
+</html>

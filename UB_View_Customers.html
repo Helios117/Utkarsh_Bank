@@ -1,0 +1,154 @@
+<html>
+
+<head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="UB.css"></link>
+
+    <script>
+
+        function onPageLoad() {
+            
+            if ( !sessionStorage.getItem( "Mgr_Id" ) || ( document.referrer != "http://localhost:3000/UB_Manager_Home.html" && document.referrer != "http://localhost:3000/UB_Add_Customer.html" && document.referrer != "http://localhost:3000/UB_Modify_Customer.html" && document.referrer != "http://localhost:3000/UB_Deactivate_Customer.html" ) ) {
+                alert( "Invalid access...redirecting to welcome page..." );
+                window.location = "UB.html";
+            }
+            view_customer();
+            document.getElementById("displaytable").style.display="none";
+            
+        }
+        
+        function view_customer() {
+
+            xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://localhost:1500/view_customers", true );
+
+            xhr.onreadystatechange =
+            function() {
+
+                if ( xhr.readyState == 4 && xhr.status == 200 ) {
+                    var res = xhr.response;
+                    res = res.replaceAll( "[", "" );
+                    res = res.replaceAll( "]", "" );
+                    res = res.replaceAll( "(", "" );
+                    res = res.replaceAll( ")", "" );
+                    res = res.replaceAll( "'", "" );
+                    res = res.replaceAll( "\"", "" );
+                    res = res.split( "," );
+
+                    var header = [ "Customer ID", "First Name", "Middle Name", "Last Name", 
+                                   "Date of Birth", "Email ID", "Mobile Number", "Address", "Deleted" ];
+
+                    var table = document.createElement( "table" );
+                    table.className = "view_table";
+
+                    for ( var i = 0; i < header.length; i++ ) {
+
+                        var th = document.createElement( "th" );
+                        th.className = "view_table_elements";
+                        th.textContent = header[i];
+                        table.appendChild( th );
+
+                    }
+
+                    for ( var i = 0; i < res.length / header.length; i++ ) {
+
+                        var tr = document.createElement( "tr" );
+
+                        for ( var j = 0; j < header.length; j++ ) {
+
+                            var td = document.createElement( "td" );
+                            td.className = "view_table_elements";
+                            td.textContent = res[ ( i * header.length ) + j ];
+                            tr.appendChild( td );
+
+                        }
+
+                        table.appendChild( tr );
+
+                    }
+
+                    document.body.appendChild( table );
+
+                }
+
+            }
+            xhr.send();
+
+        }
+
+        var cust_id;
+
+        function Initialize_Global_Vars() {
+        
+            cust_id    = document.getElementById( "cust_id" ).value;
+            //console.log(cust_id);
+        }
+
+        function View_Customer_Submit() {
+            Initialize_Global_Vars();
+
+            data = { 
+                "type": "mgr",
+                "id":    cust_id,
+            };
+
+            xhr = new XMLHttpRequest()
+            xhr.open( "POST", "http://localhost:1500/view_customer", true );
+            xhr.setRequestHeader( "Content-Type", "application/json; encoding=utf-8" );
+            xhr.onreadystatechange = function() {
+                if ( xhr.readyState == 4 && xhr.status == 200 ) {
+                    response = JSON.parse(xhr.response);
+                    if (response['data'] == null)
+                    {
+                        document.getElementById("error").innerHTML = response['response_code'];
+                        const form_info = document.getElementsByClassName("info");
+                        for (let i = 0; i < form_info.length; i++) 
+                        {
+                            form_info[i].innerHTML = '';
+                        }
+                    }
+                    else
+                    {
+                        
+                        document.getElementById("First Name").innerHTML = response['data']['fname'] ;
+                        document.getElementById("Middle Name").innerHTML = response['data']['mname'] ;
+                        document.getElementById("Last Name").innerHTML = response['data']['lname'] ;
+                        document.getElementById("Date of Birth").innerHTML = response['data']['dob'] ;
+                        document.getElementById("Email").innerHTML = response['data']['email'] ;
+                        document.getElementById("Address").innerHTML = response['data']['address'] ;
+                        document.getElementById("Mobile").innerHTML = response['data']['mobile'] ;
+                        document.getElementById("Balance").innerHTML = response['data']['balance'] ;
+                        document.getElementById("error").innerHTML = '';
+                    }
+                }
+            }
+            xhr.send( JSON.stringify( data ) );
+        }
+
+        function display_table()
+        {
+            if (document.getElementById("displaytable").style.display === "none")
+                document.getElementById("displaytable").style.display="block";
+            else
+                document.getElementById("displaytable").style.display="none";
+        }
+    </script>
+</head>
+
+<body onload="onPageLoad();">
+
+    <div class="topnav">
+
+        <a href="UB.html"><img src="utkarsh_logo.png"></img></a>
+
+        <a href="UB_Add_Customer.html">Add a Customer</a>
+        <a class="active" href="UB_Manager_Home.html">View Customers</a>
+        <a href="UB_Modify_Customer.html">Modify Customer</a>
+        <a href="UB_Deactivate_Customer.html">Deactivate Customer</a>
+
+    </div>
+    <br />
+</body>
+
+</html>

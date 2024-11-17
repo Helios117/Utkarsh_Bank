@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="UB.css"></link>
+
+        <script>
+
+            function onPageLoad() {
+
+                if ( !sessionStorage.getItem( "Mgr_Id" ) || (document.referrer != "http://localhost:3000/UB_Manager_Login.html" &&
+                document.referrer != "http://localhost:3000/UB_Modify_Customer.html" &&
+                document.referrer != "http://localhost:3000/UB_View_Customers.html" &&
+                document.referrer != "http://localhost:3000/UB_Add_Customer.html" &&
+                document.referrer != "http://localhost:3000/UB_Deactivate_Customer.html") ) {
+                    
+                    alert( "Invalid access...redirecting you to welcome page..." );
+                    window.location = "UB.html";
+
+                }
+                else {
+
+                    msg = "Welcome " + sessionStorage.getItem( "Mgr_Name" ) + "! ";
+                    msg += "Please use a menu option from the above navigation bar.";
+                    document.getElementById( "prompt" ).innerText = msg;
+
+                }
+                
+            }
+
+        </script>
+
+    </head>
+
+    <body onload="onPageLoad()">
+
+        <div class="topnav">
+
+            <a href="UB.html"><img src="utkarsh_logo.png"></img></a>
+
+            <a href="UB_Add_Customer.html">Add a Customer</a>
+            <a href="UB_View_Customers.html">View Customers</a>
+            <a href="UB_Modify_Customer.html">Modify Customer</a>
+            <a href="UB_Deactivate_Customer.html">Deactivate Customer</a>
+
+        </div>
+
+        <p class="prompt" id="prompt"></p>
+
+    </body>
+
+</html>

@@ -1,0 +1,202 @@
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="UB.css"></link>
+        <title>Utkarsh Bank</title>
+
+        <div class="topnav">
+            <a href="UB.html"><img src="utkarsh_logo.png"></img></a>
+
+            <a href="UB_Customer_Home.html" class="active">Deposit and Withdraw</a>
+            <a href="UB_View_Transactions.html">View Transactions</a>
+    
+        </div>
+
+        <script>
+
+            function deposit(){
+                amt = getInputNumb("deposit-received");
+                if (!isNaN(amt) && isFinite(amt)){
+                    updateSpanTest("submitted-balance", amt, 'deposit', amt, sessionStorage.getItem("Ctr_Id"));
+                    //updateBal('deposit', amt);
+                    document.getElementById("status").innerText = "Transaction successful";
+                    document.getElementById("status").style.color = "green";
+                }
+                else{
+                    document.getElementById("status").innerText = "Invalid input for deposit";
+                    document.getElementById("status").style.color = "crimson";
+                }
+            }
+
+            function withdraw(){
+                amt = getInputNumb("withdraw-received");
+                bal = document.getElementById("submitted-balance").innerText;
+                if (amt<=bal && !isNaN(amt) && isFinite(amt)){
+                    updateSpanTest("submitted-balance", -1*amt, 'withdraw', amt, sessionStorage.getItem("Ctr_Id"));
+                    //updateBal("withdraw", amt);
+                    document.getElementById("status").innerText = "Transaction successful";
+                    document.getElementById("status").style.color = "green";
+                }
+                else{
+                    document.getElementById("status").innerText = "Invalid input for withdraw (must be a number less than balance)";
+                    document.getElementById("status").style.color = "crimson";
+                }
+            }
+
+            function transfer(){
+                to_account = document.getElementById('transfer-account').value;
+                xhr = new XMLHttpRequest();
+                data = { "cust_id": to_account };
+                xhr.open( "POST", "http://localhost:1500/check_customer_id", true );
+                xhr.setRequestHeader( "Content-Type", "application/json; encoding=utf-8" );
+                xhr.onreadystatechange = function() {
+                    if ( xhr.readyState == 4 && xhr.status == 200 ) {
+                        resp = xhr.responseText;
+                        if ( resp.startsWith( "\"Success" ) )
+                            transfer_amount();
+                        else {
+                            document.getElementById("status").innerText = "Invalid input for transfer (must be a number less than balance, invalid id)";
+                            document.getElementById("status").style.color = "crimson";
+                        }
+                    }
+                }
+                xhr.send( JSON.stringify( data ) );
+
+            }
+
+            function getInputNumb(idName) {
+                amount = document.getElementById(idName).value;
+                pattern = /(?=.*?\d)^\$?(([1-9]\d{0,2}(,\d{3})*)|\d+)?(\.\d{1,2})?$/;
+                flag = pattern.test(amount);
+                if (flag){
+                    amount = amount.replaceAll(",","");
+                    const amountNumber = parseFloat(amount);
+                    return amountNumber;
+                }
+                else{
+                    return NaN;
+                }
+            }
+
+            function updateSpanTest(idName, addedNumber, trans_type, trans_amount, id) {
+                if (idName != ""){
+                    const current = document.getElementById(idName).innerText;
+                    const currentStringToInt = parseFloat(current);
+                    const total = currentStringToInt + addedNumber;
+                    document.getElementById(idName).innerText = total;
+                }
+                updateBal(trans_type, trans_amount, id);
+            }
+
+            function onPageLoad() {
+            
+                if ( !sessionStorage.getItem( "Ctr_Id" ) || (document.referrer != "http://localhost:3000/UB_Customer_Home.html" && 
+                document.referrer != "http://localhost:3000/UB_View_Transactions.html" &&
+                document.referrer != "http://localhost:3000/UB_Deposit_Withdraw.html"))
+                {
+                    alert( "Invalid access...redirecting to welcome page..." );
+                    window.location = "UB.html";
+                }
+            
+                data = { 
+                    "ctr_id":  sessionStorage.getItem("Ctr_Id")
+                };
+
+                xhr = new XMLHttpRequest();
+                xhr.open( "POST", "http://localhost:1500/balance_enquiry", true );
+                xhr.setRequestHeader( "Content-Type", "application/json; encoding=utf-8" );
+
+                xhr.onreadystatechange = function() {
+                if ( xhr.readyState == 4 && xhr.status == 200 ) {
+                        resp = xhr.responseText;
+                        document.getElementById("submitted-balance").innerText = resp.substring(28, resp.length - 1);
+                    }
+                } 
+                
+                xhr.send( JSON.stringify( data ) );
+
+            }
+
+            function updateBal(trans_type, trans_amount, id) {
+                
+                data = { 
+                "ctr_id":  id,
+                "balance": parseFloat(document.getElementById("submitted-balance").innerText),
+                "trans_type": trans_type,
+                "trans_amount": trans_amount
+                };
+
+                if (trans_type == "transfer-receive"){
+                    data = { 
+                    "ctr_id":  id,
+                    "balance": trans_amount,
+                    "trans_type": trans_type,
+                    "trans_amount": trans_amount
+                    };
+                }
+
+                //alert(">>>"+data["ctr_id"]+"::"+id);
+
+                xhr = new XMLHttpRequest();
+                xhr.open( "POST", "http://localhost:1500/balance_change", true );
+                xhr.setRequestHeader( "Content-Type", "application/json; encoding=utf-8" );
+                
+                xhr.send( JSON.stringify( data ) );
+
+            }
+
+            function transfer_amount() {
+
+                amt = getInputNumb("transfer-received");
+                bal = document.getElementById("submitted-balance").innerText;
+                to_account = document.getElementById('transfer-account').value;
+
+                if (amt<=bal && !isNaN(amt) && isFinite(amt) && sessionStorage.getItem("Ctr_Id")!=to_account){
+                    updateSpanTest("submitted-balance", -1*amt, 'transfer', amt, sessionStorage.getItem("Ctr_Id"));
+                    //alert(">>> Value: "+document.getElementById('transfer-account').value);
+                    //updateSpanTest("", amt, 'transfer-receive', amt, document.getElementById('transfer-account').value);
+                    updateBal("transfer-receive", amt, to_account);
+                    document.getElementById("status").innerText = "Transaction successful";
+                    document.getElementById("status").style.color = "green";
+                }
+                else{
+                    document.getElementById("status").innerText = "Invalid input for transfer (must be a number less than balance, invalid id)";
+                    document.getElementById("status").style.color = "crimson";
+                }
+
+
+            }
+
+        </script>
+    </head>
+    <body onload="onPageLoad()"></body>
+    
+    <div id="account-area">
+        <div class="deposit">
+            <h4>Deposit Amount</h4>
+            <input id="deposit-received" type="text" placeholder="Enter deposit amount"><br />
+            <button id="deposit-button" class="btn btn-success" onclick="deposit()">Deposit</button>
+        </div>
+    
+        <div class="withdraw">
+            <h4>Withdraw Amount</h4>
+            <input id="withdraw-received" type="text" placeholder="Enter withdraw amount"><br />
+            <button id="withdraw-button" class="btn btn-success" onclick="withdraw()">Withdraw</button>
+        </div>
+
+        <div class="transfer">
+            <h4>Transfer Amount</h4>
+            <input id="transfer-received" type="text" placeholder="Enter transfer amount"><br />
+            <input id="transfer-account" type="text" placeholder="Enter Customer ID"><br />
+            <button id="transfer-button" class="btn btn-success" onclick="transfer()">Transfer</button>
+        </div>
+
+
+        <div class="balance status">
+            <h3>Balance</h3>
+            <h2><span id="submitted-balance">1000</span></h2>
+        </div>
+    </div>
+    
+    <b><p id="status"></p></b>
+</html>
